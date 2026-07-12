@@ -1,52 +1,39 @@
 pipeline {
     agent any
-
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        AWS_DEFAULT_REGION    = 'ap-south-1'
+        AWS_DEFAULT_REGION = 'ap-south-1'
     }
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Hafsa-4/Infrastructure-repo.git'
+                git branch: 'main', url: 'https://github.com/Hafsa-4/Infrastructure-repo.git'
             }
         }
-
-        stage('Terraform Init') {
+        stage('Init') {
+            steps { sh 'terraform init' }
+        }
+        stage('Plan') {
             steps {
-                sh 'terraform init'
+                withVault(configuration: [vaultUrl: 'http://127.0.0.1:8200', vaultCredentialId: 'vault-token'],
+                           vaultSecrets: [[path: 'secret/aws-credentials', secretValues: [
+                               [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
+                               [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
-
-        stage('Terraform Plan') {
-            steps {
-                sh 'terraform plan -out=tfplan'
-            }
-        }
-
         stage('Approval') {
+            steps { input message: 'Approve deploy to AWS?', ok: 'Deploy' }
+        }
+        stage('Apply') {
             steps {
-                input message: 'Approve to deploy to AWS?',
-                      ok: 'Yes, Deploy Now'
+                withVault(configuration: [vaultUrl: 'http://127.0.0.1:8200', vaultCredentialId: 'vault-token'],
+                           vaultSecrets: [[path: 'secret/aws-credentials', secretValues: [
+                               [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
+                               [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
             }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                sh 'terraform apply -auto-approve tfplan'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment complete - S3 bucket created!'
-        }
-        failure {
-            echo 'Deployment failed - check logs.'
         }
     }
 }
