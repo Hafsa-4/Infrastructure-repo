@@ -3,5 +3,4 @@
 *.tfstate.*
 .terraform.lock.hcl
 terra-project-key
-terra-project-key.pub
 terraform.tfstate.backup
