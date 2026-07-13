@@ -5,32 +5,23 @@ pipeline {
     }
     stages {
         stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Hafsa-4/Infrastructure-repo.git'
-            }
+            steps { checkout scm }
         }
-        stage('Init') {
-            steps { sh 'terraform init' }
-        }
-        stage('Plan') {
+        stage('Terraform Deploy') {
             steps {
+                // Wrap Init, Plan, and Apply with Vault to authorize against S3 and AWS
                 withVault(configuration: [vaultUrl: 'http://127.0.0.1:8200', vaultCredentialId: 'vault-token'],
                            vaultSecrets: [[path: 'secret/aws-credentials', secretValues: [
                                [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
                                [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
+                    
+                    echo 'Initializing Backend...'
+                    sh 'terraform init'
+                    
+                    echo 'Generating Plan...'
                     sh 'terraform plan -out=tfplan'
-                }
-            }
-        }
-        stage('Approval') {
-            steps { input message: 'Approve deploy to AWS?', ok: 'Deploy' }
-        }
-        stage('Apply') {
-            steps {
-                withVault(configuration: [vaultUrl: 'http://127.0.0.1:8200', vaultCredentialId: 'vault-token'],
-                           vaultSecrets: [[path: 'secret/aws-credentials', secretValues: [
-                               [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
-                               [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
+                    
+                    echo 'Applying Changes...'
                     sh 'terraform apply -auto-approve tfplan'
                 }
             }
