@@ -17,7 +17,7 @@ pipeline {
                                [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
                     
                     echo 'Initializing Backend...'
-                    sh 'terraform init -input=false -migrate-state'
+                    sh 'terraform init -input=false -migrate-state -force-copy'
                     
                     echo 'Generating Execution Plan...'
                     sh 'terraform plan -out=tfplan'
@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Approval Gate') {
             steps {
-                // This makes the CD process manual: it completely pauses here for your confirmation
+                // This makes the CD process manual: it pauses here for your approval
                 input message: 'Do you want to deploy these infrastructure changes to AWS?', ok: 'Yes, Deploy!'
             }
         }
