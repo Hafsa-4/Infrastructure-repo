@@ -4,3 +4,5 @@
 .terraform.lock.hcl
 terra-project-key
 terraform.tfstate.backup
+terra-project-key.pub
+terra-project-key copy.pub
