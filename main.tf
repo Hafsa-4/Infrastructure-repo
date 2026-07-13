@@ -7,11 +7,6 @@ resource "aws_key_pair" "terra-project" {
   key_name   = "terra-project"
   public_key = file("terra-project-key.pub")
 }
-
-resource "aws_ebs_volume" "terra-project" {
-  availability_zone = "ap-south-1a"
-  size              = var.ec2_root_storage_size
-}
 resource "aws_security_group" "terra-project" {
   name        = "terra-project"
   description = "Allow SSH and HTTP"
