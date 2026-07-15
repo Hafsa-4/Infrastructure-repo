@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Terraform Apply') {
             steps {
-                withVault(configuration: [vaultUrl: 'http://54.221.153.100:8200', vaultCredentialId: 'vault-token'],
+                withVault(configuration: [vaultUrl: 'http://3.95.20.100:8200', vaultCredentialId: 'vault-token'],
                            vaultSecrets: [[path: 'secret/aws-credentials', secretValues: [
                                [envVar: 'AWS_ACCESS_KEY_ID', vaultKey: 'access_key'],
                                [envVar: 'AWS_SECRET_ACCESS_KEY', vaultKey: 'secret_key']]]]) {
