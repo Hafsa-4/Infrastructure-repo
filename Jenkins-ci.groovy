@@ -21,7 +21,7 @@ pipeline {
             steps {
                 withVault(
                     configuration: [
-                        vaultUrl: 'http://3.95.20.100:8200',
+                        vaultUrl: 'http://65.2.34.167:8200',
                         vaultCredentialId: 'vault-token'
                     ],
                     vaultSecrets: [
