@@ -37,19 +37,31 @@ resource "aws_security_group" "terra-project" {
 }
 resource "aws_vpc" "terra-project" {
   cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "terra-vpc"
+  }
 }
 resource "aws_subnet" "terra-project" {
   vpc_id     = aws_vpc.terra-project.id
   cidr_block = "10.0.1.0/24"
+  tags = {
+    Name = "terra-subnet"
+  }
 }
 resource "aws_internet_gateway" "terra-project" {
   vpc_id = aws_vpc.terra-project.id
+  tags = {
+    Name = "terra-igw"
+  }
 }
 resource "aws_route_table" "terra-project" {
   vpc_id = aws_vpc.terra-project.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.terra-project.id
+  }
+  tags = {
+    Name = "terra-route-table"
   }
 }
 resource "aws_route_table_association" "terra-project" {
