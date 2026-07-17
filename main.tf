@@ -2,6 +2,10 @@ resource "aws_instance" "terra-project" {
   ami           = var.ec2_ami_id
   instance_type = var.ec2_instance_type
   key_name      = aws_key_pair.terra-project.key_name
+   
+   tags = {
+    Name = "deploy-server{count.index +1}"
+   }
 }
 resource "aws_key_pair" "terra-project" {
   key_name   = "terra-project"
